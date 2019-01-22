@@ -42,15 +42,14 @@ class MainFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        val filePath = activity!!.getExternalFilesDir("rec")?.toString() + "/hello_world.awb"
         GlobalScope.launch {
-            Log.d("TUT", "I'm working in thread ${Thread.currentThread().name}")
-            val filePath = activity!!.getExternalFilesDir("rec")?.toString() + "/demo_file.awb"
             analyze(ByteString.copyFrom(File(filePath).readBytes()))
         }
     }
 
     private fun analyze(fileByteString: ByteString) {
-        val req = LongRunningRecognizeRequest.newBuilder()
+        val req = RecognizeRequest.newBuilder()
             .setConfig(
                 RecognitionConfig.newBuilder()
                     .setEncoding(RecognitionConfig.AudioEncoding.AMR_WB)
@@ -64,10 +63,10 @@ class MainFragment : Fragment() {
                     .build()
             )
             .build()
-        Log.d("TUT", "Requesting")
-        val responseFuture = speechClient.longRunningRecognizeAsync(req)
-        val response: LongRunningRecognizeResponse = responseFuture.get()
-        Log.d("TUT", "Response! Count ${response.resultsCount}")
+
+        val response = speechClient.recognize(req)
+
+        Log.d("TUT", "Response, count ${response.resultsCount}")
         val results = response.resultsList
         for (result in results) {
             val alternative = result.getAlternativesList().get(0)
